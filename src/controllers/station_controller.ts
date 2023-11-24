@@ -10,11 +10,11 @@ class StationController {
   static async add(station: RawStation) {
     try {
       console.log("station in add in StationController", station);
-      const newStation = await prisma.station.create({
-        data: station,
-      });
-      console.log("newStation", newStation);
-      return newStation;
+      // const newStation = await prisma.station.create({
+      //   data: station,
+      // });
+      // console.log("newStation", newStation);
+      // return newStation;
     } catch (error) {
       console.error(error);
     }
