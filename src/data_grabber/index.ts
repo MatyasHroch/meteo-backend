@@ -1,18 +1,12 @@
 import WebSocket from "ws";
-import { RawData } from "./types/meteo_raw_types";
-import { DataController } from "./controllers/data_controller";
+import { RawData } from "../types/meteo_raw_types";
+import { DataController } from "../controllers/data_grabber";
 import { PrismaClient } from "@prisma/client";
 
 const ROUNDING = 2;
 
 async function run(stationId: number, bufferSize: number | null = null) {
   const ws = new WebSocket("ws://192.168.106.219:80/ws");
-  // const station = await new PrismaClient().station.create({
-  //   data: {
-  //     name: "test",
-  //   },
-  // });
-  // const stationId = station.id;
 
   if (!bufferSize) {
     bufferSize = DataController.DEFAULT_BUFFER_SIZE;
