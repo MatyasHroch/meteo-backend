@@ -17,8 +17,8 @@ datasource db {
 
 model Station {
   id  Int     @id @default(autoincrement())
-  uri String  @unique
-  mac String? @unique
+  uri String? @unique
+  mac String  @unique
 
   name String?
   info String?
@@ -29,12 +29,14 @@ model Station {
 model Data {
   id   Int      @id @default(autoincrement())
   time DateTime
+  mac  String
 
   temperature Float?
   humidity    Float?
   pressure    Float?
   quality     Float?
+  rain        Float?
+  heat        Float?
 
-  station   Station @relation(fields: [stationId], references: [id])
-  stationId Int
+  station Station @relation(fields: [mac], references: [mac])
 }

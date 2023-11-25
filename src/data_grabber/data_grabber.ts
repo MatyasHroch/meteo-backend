@@ -1,7 +1,8 @@
 import WebSocket from "ws";
-import { RawData } from "../types/meteo_raw_types";
+import { FormatedData, RawData, RawDataKeys } from "../types/meteo_raw_types";
 import { DataController } from "../controllers/data_controller";
 import { DataProvider } from "../controllers/data_provider";
+import { Data } from "@prisma/client";
 
 class DataGrabber {
   private ws: WebSocket;
@@ -11,15 +12,23 @@ class DataGrabber {
 
   constructor(webSocketAddress: string, bufferSize: number | null = null) {
     // we set the communication channels
+    console.log("webSocketAddress", webSocketAddress);
     this.ws = new WebSocket(webSocketAddress);
     this.dataProvider = new DataProvider();
+
+    if (this.dataProvider) {
+      console.log("data provider is set in constuctor !!");
+    } else {
+      console.log("data provider is NOT set !!!!");
+    }
 
     // setting up the data controller -> to save the data in the database efficiently
     if (!bufferSize) {
       // if the buffer size is not set, we use the default one
       bufferSize = DataController.DEFAULT_BUFFER_SIZE;
     }
-    this.dataController = new DataController(bufferSize);
+    console.log("buffer size in constructor of dataGrabber", bufferSize);
+    this.dataController = new DataController(1, bufferSize);
   }
 
   // here we start the data grabber -> we set the callbacks for the websocket -> we start listening for the data
@@ -48,9 +57,9 @@ class DataGrabber {
 
   // here we set the callbacks for the websocket, so we enable all the events from the meteo station
   private setCallbacks(): void {
-    this.ws.on("error", this.wsError);
-    this.ws.on("open", this.wsOpen);
-    this.ws.on("message", this.wsMessage);
+    this.ws.on("error", () => this.wsError);
+    // this.ws.on("open", this.wsOpen);
+    this.ws.on("message", (data: string) => this.wsMessage(data));
   }
 
   ///////////////////////
@@ -60,25 +69,50 @@ class DataGrabber {
     console.error();
   }
 
-  private wsOpen(): void {
-    this.ws.send("something, just to check if it works");
-  }
+  // private wsOpen(): void {
+  //   this.ws.send("something, just to check if it works");
+  // }
 
   private wsMessage(data: string): void {
     try {
       const rawData = JSON.parse(data) as RawData;
-      const { temperature } = rawData;
-      if (temperature) {
-        rawData.temperature = Number(temperature.toFixed(DataGrabber.ROUNDING));
-      }
-      this.dataController.addData(rawData);
+      // console.log("received: %s", rawData);
+
+      const formatedData = this.formatData(rawData);
+
+      // console.log("rawData recieved", formatedData);
+      this.dataController.addData(formatedData);
 
       // now we send the data to the client every single time we receive it
-      this.dataProvider.sendData([rawData]);
-
-      console.log("received: %s", data);
+      // if (this.dataProvider) {
+      //   this.dataProvider.sendData([formatedData]);
+      // } else {
+      //   console.log("data provider is not set in wsMessage");
+      // }
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  private formatData(rawData: RawData): FormatedData {
+    const { temperature, humidity, pressure, quality, rain, heat } = rawData;
+
+    return {
+      mac: rawData.mac,
+      temperature: temperature ? parseFloat(temperature.toFixed(2)) : null,
+      humidity: humidity ? humidity : null,
+      pressure: pressure ? pressure : null,
+      quality: quality ? quality : null,
+      rain: rain ? rain : null,
+      heat: heat ? heat : null,
+      time: new Date(),
+    };
+  }
+
+  private checkProperties(rawData: RawData): void {
+    const { temperature, humidity, pressure, quality } = rawData;
+    if (!temperature) {
+      rawData.temperature = null;
     }
   }
 }

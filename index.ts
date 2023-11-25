@@ -1,40 +1,76 @@
 import { DataProvider } from "./src/controllers/data_provider";
 import { DataGrabber } from "./src/data_grabber/data_grabber";
+import { DataController } from "./src/controllers/data_controller";
 
-// const dataGrabber = new DataGrabber("ws://192.168.106.219:80/ws");
-// dataGrabber.run();
+import { PrismaClient } from "@prisma/client";
 
-function generateDummyData(count: number) {
-  const dummy = [];
+// async function run() {
+//   const prisma = new PrismaClient();
+//   const newStation = await prisma.station.create({
+//     data: {
+//       name: "test",
+//       uri: "test",
+//     },
+//   });
+//   console.log("newStation", newStation);
+// }
 
-  for (let i = 1; i <= count; i++) {
-    const temperature = Math.floor(Math.random() * (30 - 15 + 1)) + 15; // Random temperature between 15 and 30
-    const humidity = Math.floor(Math.random() * (70 - 40 + 1)) + 40; // Random humidity between 40 and 70
-    const pressure = Math.floor(Math.random() * (1020 - 990 + 1)) + 990; // Random pressure between 990 and 1020
-    const quality = Math.floor(Math.random() * (100 - 60 + 1)) + 60; // Random quality between 60 and 100
-    const time = new Date(); // Current time
-    const id = i; // Incremental ID
+// run();
 
-    dummy.push({ temperature, humidity, pressure, quality, time, id });
-  }
-
-  return dummy;
+// real code
+try {
+  const dataGrabber1 = new DataGrabber("ws://10.74.7.63:80/ws", 5);
+  const dataGrabber2 = new DataGrabber("ws://10.74.7.66:80/ws", 5);
+  dataGrabber1.run();
+  dataGrabber2.run();
+} catch (error) {
+  console.error(error);
 }
 
-// Example: Generate 50 sets of dummy data
-const generatedDummyData = generateDummyData(50);
-// console.log(generatedDummyData);
-const dataProvider = new DataProvider();
+// function generateDummyData(count: number) {
+//   const dummy = [];
 
-setInterval(() => {
-  console.log("sending data");
-  const dataToSend = [];
-  for (const data of generatedDummyData) {
-    Math.random() > 0.5 ? dataToSend.push(data) : null;
-  }
-  dataProvider.sendData(dataToSend);
-  //   dataProvider.sendData(generatedDummyData);
-}, 2000);
+//   for (let i = 1; i <= count; i++) {
+//     const temperature = Math.floor(Math.random() * (30 - 15 + 1)) + 15; // Random temperature between 15 and 30
+//     const humidity = Math.floor(Math.random() * (70 - 40 + 1)) + 40; // Random humidity between 40 and 70
+//     const pressure = Math.floor(Math.random() * (1020 - 990 + 1)) + 990; // Random pressure between 990 and 1020
+//     const quality = Math.floor(Math.random() * (100 - 60 + 1)) + 60; // Random quality between 60 and 100
+//     const time = new Date(); // Current time
+//     const id = i; // Incremental ID
+//     const stationId = 1; // Station ID
+
+//     dummy.push({
+//       temperature,
+//       humidity,
+//       pressure,
+//       quality,
+//       time,
+//       id,
+//       stationId,
+//     });
+//   }
+
+//   return dummy;
+// }
+
+// // Example: Generate 50 sets of dummy data
+// const generatedDummyData = generateDummyData(50);
+// // console.log(generatedDummyData);
+// const dataProvider = new DataProvider();
+// const dataController = new DataController(1, 10);
+
+// for (let i = 0; i < 11; i++) {
+//   dataController.addData(generatedDummyData[i]);
+// }
+
+// setInterval(() => {
+//   console.log("sending data");
+//   const dataToSend = [];
+//   for (const data of generatedDummyData) {
+//     Math.random() > 0.5 ? dataToSend.push(data) : null;
+//   }
+//   dataProvider.sendData(dataToSend);
+// }, 10000);
 
 // import express, { Express, Request, Response, Application } from "express";
 // import dotenv from "dotenv";

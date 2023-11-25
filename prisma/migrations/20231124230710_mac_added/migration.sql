@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Data" ADD COLUMN     "heat" DOUBLE PRECISION,
+ADD COLUMN     "rain" DOUBLE PRECISION;

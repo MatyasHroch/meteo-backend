@@ -1,18 +1,25 @@
 import { getClientSocket } from "../socket_instances";
 import { Server } from "socket.io";
-import { RawData } from "../types/meteo_raw_types";
+import { FormatedData, RawData } from "../types/meteo_raw_types";
 import { Data } from "ws";
+import { PrismaClient } from "@prisma/client";
 
 class DataProvider {
   private socket: Server;
+  private database = new PrismaClient();
   constructor() {
+    console.log("data provider constructor");
     this.socket = getClientSocket();
+    if (!this.socket) {
+      console.log("socket is not set");
+    }
     this.setCallbacks();
   }
 
-  public async sendData(data: RawData[] | Data[], event = "weather") {
+  public async sendData(data: FormatedData[], event = "weather") {
     try {
       // console.log("data", data);
+      console.log("data sending to client", data);
       this.socket.emit(event, data);
     } catch (error) {
       console.error(error);
@@ -20,7 +27,24 @@ class DataProvider {
   }
 
   private setCallbacks(): void {
-    this.socket.on("message", this.socketMessage);
+    this.socket.on("message", (data) => this.socketMessage(data));
+    this.socket.on("getLastData", (count: number) => {
+      this.sendLastData(count);
+    });
+  }
+
+  public async sendLastData(count: number, event = "weather") {
+    try {
+      const data = await this.database.data.findMany({
+        take: count,
+        orderBy: {
+          time: "desc",
+        },
+      });
+      this.socket.emit(event, data);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   private socketMessage(data: string): void {
