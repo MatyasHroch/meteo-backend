@@ -76,7 +76,7 @@ async function getDaily(req: Request, res: Response): Promise<void> {
     // get last 24 hours
     let lastDay = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const data = await prisma.meanData.findMany({
+    const data: any = await prisma.meanData.findMany({
       where: {
         AND: [
           {
@@ -90,14 +90,16 @@ async function getDaily(req: Request, res: Response): Promise<void> {
         ],
       },
     });
-    // console.log("data", data);
-    console.log("data length", data.length);
 
-    // console.log("data in daily endpoint", data);
-    // get them to the right format
-    // { min, max, mean}
+    var hours = [];
+    for (const entry of data) {
+      entry.tag = entry.time.getHours();
+      hours.push(entry.time.getHours());
+    }
 
-    const formatedData = formatMeanData(data, dataType);
+    const unique = [...new Set(hours)];
+
+    const formatedData = getFormatedData(data, dataType, unique);
     res.send(formatedData);
   } catch (error) {}
 }
@@ -133,7 +135,7 @@ async function getWeekly(req: Request, res: Response) {
 
     const lastWeek = new Date();
     lastWeek.setDate(lastWeek.getDate() - 7);
-    const data = await prisma.meanData.findMany({
+    const data: any = await prisma.meanData.findMany({
       where: {
         mac: station.mac,
         time: {
@@ -142,7 +144,15 @@ async function getWeekly(req: Request, res: Response) {
       },
     });
 
-    const formatedData = getFormatedData(data, dataType);
+    var days = [];
+    for (const entry of data) {
+      entry.tag = entry.time.getDate();
+      days.push(entry.time.getDate());
+    }
+
+    const unique = [...new Set(days)];
+
+    const formatedData = getFormatedData(data, dataType, unique);
     console.log("formatedData in Weekly", formatedData);
     res.send(formatedData);
   } catch (error) {}
@@ -177,7 +187,15 @@ async function getMonthly(req: Request, res: Response) {
       },
     });
 
-    res.send(getFormatedData(data, dataType));
+    var days = [];
+    for (const entry of data) {
+      entry.tag = entry.time.getDate();
+      days.push(entry.time.getDate());
+    }
+
+    const unique = [...new Set(days)];
+
+    res.send(getFormatedData(data, dataType, unique));
   } catch (error) {}
 }
 

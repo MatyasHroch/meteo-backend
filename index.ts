@@ -55,8 +55,6 @@ app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });
 
-// const prisma = new PrismaClient();
-
 // // setting up socket io communication with all the IoT devices
 // async function run() {
 //   const stations = await prisma.station.findMany();

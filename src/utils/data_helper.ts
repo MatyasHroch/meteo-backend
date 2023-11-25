@@ -31,15 +31,11 @@ export function propertiesOk(data: RawData): objectBoolean {
   return result;
 }
 
-export function getFormatedData(meanData: any, dataType: string) {
-  var days = [];
-  for (const entry of meanData) {
-    entry.tag = entry.time.getDate();
-    days.push(entry.time.getDate());
-  }
-
-  const uniqueDays = [...new Set(days)];
-
+export function getFormatedData(
+  data: any,
+  dataType: string,
+  unique: Array<number>
+) {
   const formatedData: any = {
     max: [],
     min: [],
@@ -47,8 +43,8 @@ export function getFormatedData(meanData: any, dataType: string) {
     time: [],
   };
 
-  for (const day of uniqueDays) {
-    const dayData = meanData.filter((entry: any) => entry.tag == day);
+  for (const day of unique) {
+    const dayData = data.filter((entry: any) => entry.tag == day);
     // console.log("dayData", dayData);
     const formated = formatMeanData(dayData, dataType);
     // console.log("formated", formated);
