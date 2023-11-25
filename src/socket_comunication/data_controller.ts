@@ -101,7 +101,7 @@ class DataController {
         data: this.buffer,
       };
 
-      console.log("dataToSend", dataToSend);
+      // console.log("dataToSend", dataToSend);
       await this.dataProvider.sendData(dataToSend);
 
       const newData = await this.database.data.createMany({

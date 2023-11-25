@@ -69,6 +69,12 @@ class DataController {
       }
     }
 
+    console.log("meanData", meanData);
+    // add to the database
+    this.database.meanData.create({
+      data: meanData,
+    });
+
     return meanData;
   }
 
@@ -88,7 +94,10 @@ class DataController {
   public async addBufferData(data: FormatedData) {
     try {
       this.buffer.push(data);
-      this.processBufferData();
+      console.log("Pushed to the buffer");
+      if (this.buffer.length >= 20) {
+        await this.processBufferData();
+      }
     } catch (error) {
       console.error(error);
     }

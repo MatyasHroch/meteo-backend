@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { FormatedData, RawData, RawDataKeys } from "../types/meteo_data_types";
-import { formatData } from "../utils/data_helper";
+import { formatData, propertiesOk } from "../utils/data_helper";
 import { DataController } from "./data_controller";
 import { Axios } from "axios";
 import { getDaily, getWeekly, getMonthly } from "./data_provider";
@@ -26,7 +26,9 @@ class DataFetcher {
     if (this.intervalId !== null) {
       return false;
     }
-    this.intervalId = setInterval(this.onTick, this.pollTimeMs);
+
+    console.log("data fetcher is running");
+    this.intervalId = setInterval(() => this.onTick, this.pollTimeMs);
 
     return true;
   }
@@ -45,10 +47,20 @@ class DataFetcher {
   private async onTick(): Promise<void> {
     const rawData = await this.fetchData();
     const formatedData = formatData(rawData);
-    this.dataController.addBufferData(formatedData);
-    if (new Date().getMinutes() === 0) {
-      this.dataController.processBufferData();
+    const ok = propertiesOk(formatedData);
+
+    console.log("formatedData in onTick", formatedData);
+
+    for (const value in Object.entries(formatedData)) {
+      if (value) throw new Error("value is null");
     }
+
+    console.log("ok in onTick", ok);
+    await this.dataController.addBufferData(formatedData);
+
+    // do it every 2 minutes
+
+    // this.dataController.processBufferData();
   }
 
   private async fetchData(): Promise<RawData> {

@@ -2,27 +2,32 @@ import { meanData } from "@prisma/client";
 import { FormatedData, RawData, Data } from "../types/meteo_data_types";
 const ROUNDING = 2;
 
-// export function propertiesOk(data: RawData): boolean {
-//   const { temperature, humidity, pressure, quality, rain, heat } = data;
-//   if (temperature && (temperature < -50 || temperature > 100)) {
-//     throw new Error("temperature is not in the right range");
-//   }
-//   if (humidity && (humidity < 0 || humidity > 100)) {
-//     throw new Error("humidity is not in the right range");
-//   }
-//   if (pressure && (pressure < 0 || pressure > 2000)) {
-//     throw new Error("pressure is not in the right range");
-//   }
-//   if (quality && (quality < 0 || quality > 100)) {
-//     throw new Error("quality is not in the right range");
-//   }
-//   if (rain && (rain < 0 || rain > 4095)) {
-//     throw new Error("rain is not in the right range");
-//   }
-//   if (heat && (heat < -50 || heat > 50)) {
-//     throw new Error("heat is not in the right range");
-//   }
-// }
+type objectBoolean = {
+  [key: string]: boolean;
+};
+
+export function propertiesOk(data: RawData): objectBoolean {
+  const result: objectBoolean = {};
+
+  const { temperature, humidity, pressure, quality, rain, heat } = data;
+
+  result.temperature = !(
+    temperature &&
+    (temperature < -50 || temperature > 100)
+  );
+
+  result.humidity = !(humidity && (humidity < 0 || humidity > 100));
+
+  result.pressure = !(pressure && (pressure < 0 || pressure > 2000));
+
+  result.quality = !(quality && (quality < 0 || quality > 100));
+
+  result.rain = !(rain && (rain < 0 || rain > 4095));
+
+  result.heat = !(heat && (heat < -50 || heat > 50));
+
+  return result;
+}
 
 export function formatMeanData(meanData: meanData[], dataType: string) {
   const data: any = {
