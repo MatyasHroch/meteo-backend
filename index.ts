@@ -14,32 +14,25 @@ try {
   console.error(error);
 }
 
-// import express, { Express, Request, Response, Application } from "express";
-// import dotenv from "dotenv";
-// import cors from "cors";
-// import bodyParser from "body-parser";
-// import { Server } from "socket.io";
-// import { PrismaClient } from "@prisma/client";
+import {
+  getDaily,
+  getWeekly,
+  getMonthly,
+} from "./src/rest_communication/data_provider";
+import express, { Express, Request, Response, Application } from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
 
-//For env File
-// dotenv.config();
+// setting up the server
+const app: Application = express();
+const port = process.env.PORT || 8000;
+app.use(bodyParser.json());
+app.use(cors({ origin: true, credentials: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Prisma just for tests
-// const prisma = new PrismaClient();
-
-// // setting up socket io
-// const io = new Server(8001, {
-//   cors: {
-//     origin: "*",
-//   },
-// });
-
-// // setting up the server
-// const app: Application = express();
-// const port = process.env.PORT || 8000;
-// app.use(bodyParser.json());
-// app.use(cors({ origin: true, credentials: true }));
-// app.use(bodyParser.urlencoded({ extended: true }));
+app.get("/api/v1/daily", getDaily);
+app.get("/api/v1/weekly", getWeekly);
+app.get("/api/v1/monthly", getMonthly);
 
 // function generateDummyData(count: number) {
 //   const dummy = [];

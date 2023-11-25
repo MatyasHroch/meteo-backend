@@ -1,28 +1,15 @@
-# Use postgres/example user/password credentials
-# version: "3.1"
-
-# services:
-#   db:
-#     image: postgres
-#     restart: always
-#     ports:
-#       - 5432:5432
-#     volumes:
-#       - ./prisma/data:/var/lib/postgresql/data
-#       eviroment:
-#         POSTGRES_USER: postgres
-#         POSTGRES_PASSWORD: password
-#         POSTGRES_DB: weather
-
-#   adminer:
-#     image: adminer
-#     restart: always
-#     ports:
-#       - 8080:8080
-
 version: "3.9"
 
 services:
+  server:
+    container_name: meteo-backend
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:14-alpine
     ports:
@@ -39,3 +26,5 @@ services:
     restart: always
     ports:
       - 8888:8080
+    depends_on:
+      - postgres

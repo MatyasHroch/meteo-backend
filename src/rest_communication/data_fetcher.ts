@@ -1,116 +1,65 @@
 import WebSocket from "ws";
 import { FormatedData, RawData, RawDataKeys } from "../types/meteo_data_types";
 import { formatData } from "../utils/data_helper";
-import { axios } from "axios";
+import { DataController } from "./data_controller";
+import { Axios } from "axios";
+import { getDaily, getWeekly, getMonthly } from "./data_provider";
 
-class DataGrabber {
-  private static readonly ROUNDING = 2;
+class DataFetcher {
+  private readonly pollTime: number;
+  private readonly axios: Axios;
+  private readonly webAddress: string;
+  private readonly dataController: DataController;
+  private intervalId?: NodeJS.Timeout | null = null;
+  private readonly mac: string;
 
-  constructor(webAddress: string, pollTime: number) {
-    // we set the communication channels
-    console.log("webSocketAddress", webSocketAddress);
-    this.ws = new WebSocket(webSocketAddress);
-    this.dataProvider = new DataProvider();
-
-    if (this.dataProvider) {
-      console.log("data provider is set in constuctor !!");
-    } else {
-      console.log("data provider is NOT set !!!!");
-    }
-
-    // setting up the data controller -> to save the data in the database efficiently
-    if (!bufferSize) {
-      // if the buffer size is not set, we use the default one
-      bufferSize = DataController.DEFAULT_BUFFER_SIZE;
-    }
-    console.log("buffer size in constructor of dataGrabber", bufferSize);
-    this.dataController = new DataController(1, bufferSize);
+  constructor(webAddress: string, mac: string, pollTime: number) {
+    this.pollTime = pollTime;
+    this.webAddress = webAddress;
+    this.mac = mac;
+    this.axios = new Axios();
+    this.dataController = new DataController(mac);
   }
 
   // here we start the data grabber -> we set the callbacks for the websocket -> we start listening for the data
   public run(): boolean {
-    if (!this.ws.OPEN || this.ws.CONNECTING) {
-      console.log("data grabber is already running");
+    if (this.intervalId !== null) {
       return false;
     }
+    this.intervalId = setInterval(this.onTick, this.pollTime);
 
-    this.setCallbacks();
-    console.log("data grabber is running");
     return true;
   }
 
   // here we stop the data grabber -> we close the websocket
   public stop(): boolean {
-    if (this.ws.CLOSED || this.ws.CLOSING) {
-      console.log("data grabber is not running");
+    if (this.intervalId === null) {
       return false;
     }
 
-    this.ws.close();
-    console.log("data grabber is stopped");
+    clearInterval(this.intervalId);
+
     return true;
   }
 
-  // here we set the callbacks for the websocket, so we enable all the events from the meteo station
-  private setCallbacks(): void {
-    this.ws.on("error", () => this.wsError);
-    // this.ws.on("open", this.wsOpen);
-    this.ws.on("message", (data: string) => this.wsMessage(data));
+  private async onTick(): Promise<void> {
+    const rawData = await this.fetchData();
+    const formatedData = formatData(rawData);
+    this.dataController.addBufferData(formatedData);
+    if (new Date().getMinutes() === 0) {
+      this.dataController.processBufferData();
+    }
   }
 
-  ///////////////////////
-  // here we define all the callbacks for the websocket
-
-  private wsError(): void {
-    console.error();
-  }
-
-  // private wsOpen(): void {
-  //   this.ws.send("something, just to check if it works");
-  // }
-
-  private wsMessage(data: string): void {
+  private async fetchData(): Promise<RawData> {
+    let result: RawData;
     try {
-      const rawData = JSON.parse(data) as RawData;
-      // console.log("received: %s", rawData);
-
-      const formatedData = formatData(rawData);
-
-      // console.log("rawData recieved", formatedData);
-      this.dataController.addData(formatedData);
-
-      // now we send the data to the client every single time we receive it
-      // if (this.dataProvider) {
-      //   this.dataProvider.sendData([formatedData]);
-      // } else {
-      //   console.log("data provider is not set in wsMessage");
-      // }
+      result = JSON.parse(await this.axios.get(this.webAddress)) as RawData;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
-  }
-
-  // private formatData(rawData: RawData): FormatedData {
-  //   const { temperature, humidity, pressure, quality, rain, heat } = rawData;
-
-  //   return {
-  //     mac: rawData.mac,
-  //     temperature: temperature ? parseFloat(temperature.toFixed(2)) : null,
-  //     humidity: humidity ? humidity : null,
-  //     pressure: pressure ? pressure : null,
-  //     quality: quality ? quality : null,
-  //     rain: rain ? rain : null,
-  //     heat: heat ? heat : null,
-  //     time: new Date(),
-  //   };
-  // }
-
-  private checkProperties(rawData: RawData): void {
-    const { temperature, humidity, pressure, quality } = rawData;
-    if (!temperature) {
-      rawData.temperature = null;
-    }
+    return result;
   }
 }
 
-export { DataGrabber };
+export { DataFetcher };
