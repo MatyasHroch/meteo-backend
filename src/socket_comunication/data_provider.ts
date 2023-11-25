@@ -1,6 +1,6 @@
 import { getClientSocket } from "../socket_instances";
 import { Server } from "socket.io";
-import { FormatedData, RawData } from "../types/meteo_raw_types";
+import { FormatedData, RawData } from "../types/meteo_data_types";
 import { Data } from "ws";
 import { PrismaClient } from "@prisma/client";
 

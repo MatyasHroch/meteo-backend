@@ -1,8 +1,8 @@
 import WebSocket from "ws";
-import { FormatedData, RawData, RawDataKeys } from "../types/meteo_raw_types";
-import { DataController } from "../controllers/data_controller";
-import { DataProvider } from "../controllers/data_provider";
-import { Data } from "@prisma/client";
+import { FormatedData, RawData, RawDataKeys } from "../types/meteo_data_types";
+import { DataController } from "./data_controller";
+import { DataProvider } from "./data_provider";
+import { formatData } from "../utils/data_helper";
 
 class DataGrabber {
   private ws: WebSocket;
@@ -78,7 +78,7 @@ class DataGrabber {
       const rawData = JSON.parse(data) as RawData;
       // console.log("received: %s", rawData);
 
-      const formatedData = this.formatData(rawData);
+      const formatedData = formatData(rawData);
 
       // console.log("rawData recieved", formatedData);
       this.dataController.addData(formatedData);
@@ -94,20 +94,20 @@ class DataGrabber {
     }
   }
 
-  private formatData(rawData: RawData): FormatedData {
-    const { temperature, humidity, pressure, quality, rain, heat } = rawData;
+  // private formatData(rawData: RawData): FormatedData {
+  //   const { temperature, humidity, pressure, quality, rain, heat } = rawData;
 
-    return {
-      mac: rawData.mac,
-      temperature: temperature ? parseFloat(temperature.toFixed(2)) : null,
-      humidity: humidity ? humidity : null,
-      pressure: pressure ? pressure : null,
-      quality: quality ? quality : null,
-      rain: rain ? rain : null,
-      heat: heat ? heat : null,
-      time: new Date(),
-    };
-  }
+  //   return {
+  //     mac: rawData.mac,
+  //     temperature: temperature ? parseFloat(temperature.toFixed(2)) : null,
+  //     humidity: humidity ? humidity : null,
+  //     pressure: pressure ? pressure : null,
+  //     quality: quality ? quality : null,
+  //     rain: rain ? rain : null,
+  //     heat: heat ? heat : null,
+  //     time: new Date(),
+  //   };
+  // }
 
   private checkProperties(rawData: RawData): void {
     const { temperature, humidity, pressure, quality } = rawData;

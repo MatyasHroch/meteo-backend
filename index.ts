@@ -1,23 +1,10 @@
-import { DataProvider } from "./src/controllers/data_provider";
-import { DataGrabber } from "./src/data_grabber/data_grabber";
-import { DataController } from "./src/controllers/data_controller";
+import { DataProvider } from "./src/socket_comunication/data_provider";
+import { DataGrabber } from "./src/socket_comunication/data_grabber";
+import { DataController } from "./src/socket_comunication/data_controller";
 
 import { PrismaClient } from "@prisma/client";
 
-// async function run() {
-//   const prisma = new PrismaClient();
-//   const newStation = await prisma.station.create({
-//     data: {
-//       name: "test",
-//       uri: "test",
-//     },
-//   });
-//   console.log("newStation", newStation);
-// }
-
-// run();
-
-// real code
+// real code socket sossing data
 try {
   const dataGrabber1 = new DataGrabber("ws://10.74.7.63:80/ws", 5);
   const dataGrabber2 = new DataGrabber("ws://10.74.7.66:80/ws", 5);
@@ -26,6 +13,33 @@ try {
 } catch (error) {
   console.error(error);
 }
+
+// import express, { Express, Request, Response, Application } from "express";
+// import dotenv from "dotenv";
+// import cors from "cors";
+// import bodyParser from "body-parser";
+// import { Server } from "socket.io";
+// import { PrismaClient } from "@prisma/client";
+
+//For env File
+// dotenv.config();
+
+// Prisma just for tests
+// const prisma = new PrismaClient();
+
+// // setting up socket io
+// const io = new Server(8001, {
+//   cors: {
+//     origin: "*",
+//   },
+// });
+
+// // setting up the server
+// const app: Application = express();
+// const port = process.env.PORT || 8000;
+// app.use(bodyParser.json());
+// app.use(cors({ origin: true, credentials: true }));
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 // function generateDummyData(count: number) {
 //   const dummy = [];

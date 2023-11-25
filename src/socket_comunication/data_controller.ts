@@ -1,4 +1,4 @@
-import { FormatedData, RawData } from "../types/meteo_raw_types";
+import { FormatedData, RawData } from "../types/meteo_data_types";
 import { PrismaClient } from "@prisma/client";
 import { Data } from "@prisma/client";
 import { DataProvider } from "./data_provider";
@@ -11,18 +11,18 @@ class DataController {
   private database: PrismaClient;
   private dataProvider: DataProvider;
   private bufferSize: number;
-  private stationId: number;
+  // private stationId: number;
   //   private station: Station
 
   constructor(
     stationId: number,
     bufferSize = DataController.DEFAULT_BUFFER_SIZE
   ) {
-    this.stationId = stationId;
+    // this.stationId = stationId;
     console.log("bufferSize in constructor of dataController", bufferSize);
     this.bufferSize = bufferSize;
 
-    DataController.upStationsIds.push(stationId);
+    // DataController.upStationsIds.push(stationId);
 
     this.database = new PrismaClient();
     this.dataProvider = new DataProvider();
@@ -94,19 +94,7 @@ class DataController {
       });
 
       console.log("newData", newData);
-
-      // if (this.dataProvider) {
-      //   await this.dataProvider.sendData(this.buffer);
-      // } else {
-      //   console.log("data provider is not set in wsMessage");
-      // }
-      // for (const weatherData of this.buffer) {
-      //   await this.database.data.create({
-      //     data: weatherData,
-      //   });
-      // }
       console.log("data saved to the database");
-      //   this.database.data.
     } catch (error) {
       console.log("error", error);
     }

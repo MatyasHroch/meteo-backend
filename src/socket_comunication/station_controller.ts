@@ -1,5 +1,5 @@
 import { PrismaClient, Station } from "@prisma/client";
-import { RawStation } from "../types/meteo_raw_types";
+import { RawStation } from "../types/meteo_data_types";
 
 const prisma = new PrismaClient();
 

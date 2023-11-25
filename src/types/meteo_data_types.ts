@@ -24,6 +24,7 @@ type FormatedData = {
   heat: GLfloat | null;
   time: Date;
 };
+
 const RawDataKeys = [
   "mac",
   "temperature",
@@ -41,4 +42,4 @@ const RawDataKeys = [
 //   rain        Float?
 //   heat        Float?
 
-export { RawStation, RawData, RawDataKeys, FormatedData };
+export { RawStation, RawData, RawDataKeys, FormatedData, Data };
