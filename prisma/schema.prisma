@@ -34,7 +34,7 @@ model Data {
   rain        Float?
   heat        Float?
 
-  station Station @relation(fields: [mac], references: [mac])
+  station Station @relation(fields: [mac], references: [mac], onUpdate: Cascade, onDelete: Cascade)
 }
 
 model meanData {
@@ -42,41 +42,29 @@ model meanData {
   time DateTime
   mac  String
 
-  maxTemperature     Float?
-  minTemperature     Float?
-  maxTemperatureTime DateTime?
-  minTemperatureTime DateTime?
-  temperature        Float?
+  maxTemperature  Float?
+  minTemperature  Float?
+  meanTemperature Float?
 
-  maxHumidity     Float?
-  minHumidity     Float?
-  maxHumidityTime DateTime?
-  minHumidityTime DateTime?
-  humidity        Float?
+  maxHumidity  Float?
+  minHumidity  Float?
+  meanHumidity Float?
 
-  maxPressure     Float?
-  minPressure     Float?
-  maxPressureTime DateTime?
-  minPressureTime DateTime?
-  pressure        Float?
+  maxPressure  Float?
+  minPressure  Float?
+  meanPressure Float?
 
-  maxQuality     Float?
-  minQuality     Float?
-  maxQualityTime DateTime?
-  minQualityTime DateTime?
-  quality        Float?
+  maxQuality  Float?
+  minQuality  Float?
+  meanQuality Float?
 
-  maxRain     Float?
-  minRain     Float?
-  maxRainTime DateTime?
-  minRainTime DateTime?
-  rain        Float?
+  maxRain  Float?
+  minRain  Float?
+  meanRain Float?
 
-  maxHeat     Float?
-  minHeat     Float?
-  maxHeatTime DateTime?
-  minHeatTime DateTime?
-  heat        Float?
+  maxHeat  Float?
+  minHeat  Float?
+  meanHeat Float?
 
-  station Station @relation(fields: [mac], references: [mac])
+  station Station @relation(fields: [mac], references: [mac], onUpdate: Cascade, onDelete: Cascade)
 }

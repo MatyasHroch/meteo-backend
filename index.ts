@@ -1,27 +1,55 @@
-import { DataProvider } from "./src/socket_comunication/data_provider";
-import { DataGrabber } from "./src/socket_comunication/data_grabber";
-import { DataController } from "./src/socket_comunication/data_controller";
+import express, { Express, Request, Response, Application } from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
 
 import { PrismaClient } from "@prisma/client";
-
-// real code socket sossing data
-try {
-  const dataGrabber1 = new DataGrabber("ws://10.74.7.63:80/ws", 5);
-  const dataGrabber2 = new DataGrabber("ws://10.74.7.66:80/ws", 5);
-  dataGrabber1.run();
-  dataGrabber2.run();
-} catch (error) {
-  console.error(error);
-}
-
+import { DataGrabber } from "./src/socket_comunication/data_grabber";
+import { DataFetcher } from "./src/rest_communication/data_fetcher";
 import {
   getDaily,
   getWeekly,
   getMonthly,
+  getStations,
+  changeStationName,
+  addStation,
+  deleteStation,
 } from "./src/rest_communication/data_provider";
-import express, { Express, Request, Response, Application } from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
+
+///////////////////////////////////////////////////////////
+// SOCKET AND REST COMUNICATION TO THE IOT DEVICES
+// AND SOCET COMUNICATION WITH THE FRONTEND
+
+const prisma = new PrismaClient();
+
+// setting up socket io communication with all the IoT devices
+async function run() {
+  const stations = await prisma.station.findMany();
+  stations.forEach((station) => {
+    try {
+      const ip = station.uri;
+      const dg = new DataGrabber(`ws://${ip}/ws`, 5);
+      const df = new DataFetcher(`http://${ip}/`, station.mac, 5);
+      dg.run();
+      df.run();
+    } catch (error) {
+      console.error(error);
+    }
+  });
+}
+
+run();
+
+// try {
+//   const dataGrabber1 = new DataGrabber("ws://10.74.7.63:80/ws", 5);
+//   // const dataGrabber2 = new DataGrabber("ws://10.74.7.66:80/ws", 5);
+//   dataGrabber1.run();
+//   // dataGrabber2.run();
+// } catch (error) {
+//   console.error(error);
+// }
+
+/////////////////////////////////////////////////
+// SET UP REST COMUNICATION WITH THE FRONTEND
 
 // setting up the server
 const app: Application = express();
@@ -30,9 +58,18 @@ app.use(bodyParser.json());
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/api/v1/daily", getDaily);
-app.get("/api/v1/weekly", getWeekly);
-app.get("/api/v1/monthly", getMonthly);
+// setting up the endpoints
+app.get("/api/v1/daily/:dataType", getDaily);
+app.get("/api/v1/weekly/:dataType", getWeekly);
+app.get("/api/v1/monthly/:dataType", getMonthly);
+app.get("/api/v1/stations", getStations);
+app.post("/api/v1/station", addStation);
+app.put("/api/v1/station", changeStationName);
+app.delete("/api/v1/station/:id", deleteStation);
+
+app.listen(port, () => {
+  console.log(`Server is Fire at http://localhost:${port}`);
+});
 
 // function generateDummyData(count: number) {
 //   const dummy = [];
@@ -136,10 +173,6 @@ app.get("/api/v1/monthly", getMonthly);
 
 // i need endpoins for the weather data:
 // /api/v1/weather/data/:id
-
-// app.listen(port, () => {
-//   console.log(`Server is Fire at http://localhost:${port}`);
-// });
 
 // test of server
 // app.get("/", (req: Request, res: Response) => {

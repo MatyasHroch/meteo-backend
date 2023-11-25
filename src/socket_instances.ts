@@ -1,10 +1,11 @@
 import { Server } from "socket.io";
+const PORT = 8001;
 
 let io: Server | null = null;
 
 function getClientSocket(): Server {
   if (!io) {
-    io = new Server(8001, {
+    io = new Server(PORT, {
       cors: {
         origin: "*",
       },
@@ -14,10 +15,3 @@ function getClientSocket(): Server {
 }
 
 export { getClientSocket };
-
-// // setting up socket io
-// const io = new Server(8001, {
-//   cors: {
-//     origin: "*",
-//   },
-// });

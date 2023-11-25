@@ -6,15 +6,15 @@ import { Axios } from "axios";
 import { getDaily, getWeekly, getMonthly } from "./data_provider";
 
 class DataFetcher {
-  private readonly pollTime: number;
+  private readonly pollTimeMs: number;
   private readonly axios: Axios;
   private readonly webAddress: string;
   private readonly dataController: DataController;
   private intervalId?: NodeJS.Timeout | null = null;
   private readonly mac: string;
 
-  constructor(webAddress: string, mac: string, pollTime: number) {
-    this.pollTime = pollTime;
+  constructor(webAddress: string, mac: string, pollTimeSeconds: number) {
+    this.pollTimeMs = pollTimeSeconds * 1000;
     this.webAddress = webAddress;
     this.mac = mac;
     this.axios = new Axios();
@@ -26,7 +26,7 @@ class DataFetcher {
     if (this.intervalId !== null) {
       return false;
     }
-    this.intervalId = setInterval(this.onTick, this.pollTime);
+    this.intervalId = setInterval(this.onTick, this.pollTimeMs);
 
     return true;
   }

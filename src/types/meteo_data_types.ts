@@ -23,6 +23,12 @@ type FormatedData = {
   rain: GLfloat | null;
   heat: GLfloat | null;
   time: Date;
+  stationId?: number | null;
+};
+
+type FrontendData = {
+  stationId: number;
+  data: FormatedData[];
 };
 
 const RawDataKeys = [
@@ -42,4 +48,4 @@ const RawDataKeys = [
 //   rain        Float?
 //   heat        Float?
 
-export { RawStation, RawData, RawDataKeys, FormatedData, Data };
+export { RawStation, FrontendData, RawData, RawDataKeys, FormatedData, Data };

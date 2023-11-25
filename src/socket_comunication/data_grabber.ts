@@ -79,7 +79,6 @@ class DataGrabber {
       // console.log("received: %s", rawData);
 
       const formatedData = formatData(rawData);
-
       // console.log("rawData recieved", formatedData);
       this.dataController.addData(formatedData);
 

@@ -1,7 +1,6 @@
 import { getClientSocket } from "../socket_instances";
 import { Server } from "socket.io";
-import { FormatedData, RawData } from "../types/meteo_data_types";
-import { Data } from "ws";
+import { FormatedData, FrontendData, RawData } from "../types/meteo_data_types";
 import { PrismaClient } from "@prisma/client";
 
 class DataProvider {
@@ -16,10 +15,13 @@ class DataProvider {
     this.setCallbacks();
   }
 
-  public async sendData(data: FormatedData[], event = "weather") {
+  public async sendData(
+    data: FormatedData[] | FrontendData,
+    event = "weather"
+  ) {
     try {
       // console.log("data", data);
-      console.log("data sending to client", data);
+      // console.log("data sending to client", data);
       this.socket.emit(event, data);
     } catch (error) {
       console.error(error);
@@ -28,23 +30,6 @@ class DataProvider {
 
   private setCallbacks(): void {
     this.socket.on("message", (data) => this.socketMessage(data));
-    this.socket.on("getLastData", (count: number) => {
-      this.sendLastData(count);
-    });
-  }
-
-  public async sendLastData(count: number, event = "weather") {
-    try {
-      const data = await this.database.data.findMany({
-        take: count,
-        orderBy: {
-          time: "desc",
-        },
-      });
-      this.socket.emit(event, data);
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   private socketMessage(data: string): void {
@@ -54,30 +39,3 @@ class DataProvider {
 }
 
 export { DataProvider };
-
-// // import { PrismaClient } from "@prisma/client";
-// // import { Server } from "socket.io";
-
-// // const prisma = new PrismaClient();
-
-// // // setting up socket io
-// // const io = new Server(8001, {
-// //   cors: {
-// //     origin: "*",
-// //   },
-// // });
-
-// // async function run() {
-// //   io.on("connection", async (socket) => {
-// //     socket.send("hello");
-// //     console.log("a user connected");
-// //     // io.emit("testEvent", { message: "This is a test message" });
-// //     await sendWeatherData([]);
-// //   });
-// // }
-
-// // async function sendWeatherData(weatherData: any) {
-// //   io.emit("weather", weatherData);
-// // }
-
-// // run();

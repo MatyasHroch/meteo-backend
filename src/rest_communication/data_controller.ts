@@ -7,10 +7,6 @@ class DataController {
   static upStationsIds: number[] = [];
   private buffer: FormatedData[];
   private database: PrismaClient;
-  private max: number;
-  private maxTime: Date;
-  private min: number;
-  private minTime: Date;
   constructor(mac: string) {
     this.database = new PrismaClient();
     this.buffer = [];
@@ -46,15 +42,34 @@ class DataController {
       }
     });
 
+    this.buffer = [];
+
     const temperature = this.processArray(temperatures);
     const humidity = this.processArray(humidities);
     const pressure = this.processArray(pressures);
-    const quality = this.processArray(temperatures);
+    const quality = this.processArray(qualities);
     const rain = this.processArray(rains);
     const heat = this.processArray(heats);
 
-    this.buffer = [];
-    return acumulated;
+    const allData: any = {
+      temperature,
+      humidity,
+      pressure,
+      quality,
+      rain,
+      heat,
+    };
+    const meanData: any = {};
+
+    for (const dataType in allData) {
+      for (const value in allData) {
+        const type = dataType[0].toUpperCase() + dataType.slice(1);
+        const key = `${value}${type}`;
+        meanData[key] = allData[dataType][value];
+      }
+    }
+
+    return meanData;
   }
 
   private add(accumulator: number, a: number) {

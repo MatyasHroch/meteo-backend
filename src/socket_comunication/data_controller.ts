@@ -1,4 +1,4 @@
-import { FormatedData, RawData } from "../types/meteo_data_types";
+import { FormatedData, FrontendData, RawData } from "../types/meteo_data_types";
 import { PrismaClient } from "@prisma/client";
 import { Data } from "@prisma/client";
 import { DataProvider } from "./data_provider";
@@ -72,29 +72,44 @@ class DataController {
       //   console.log("mac of the saved ", weatherData.mac);
       // }
 
-      const station = await this.database.station.findUnique({
+      const mac = this.buffer[0].mac;
+
+      let station: any = await this.database.station.findUnique({
         where: {
-          mac: this.buffer[0].mac,
+          mac: mac,
         },
       });
 
-      if (!station) {
-        console.log("station is not found");
+      if (station == null) {
+        // console.log("station is not found");
         await this.database.station.create({
           data: {
-            mac: this.buffer[0].mac,
+            mac: mac,
+          },
+        });
+        station = await this.database.station.findUnique({
+          where: {
+            mac: mac,
           },
         });
       }
 
-      this.dataProvider.sendData(this.buffer);
+      const stationId: number = station.id;
+
+      const dataToSend: FrontendData = {
+        stationId: stationId,
+        data: this.buffer,
+      };
+
+      console.log("dataToSend", dataToSend);
+      await this.dataProvider.sendData(dataToSend);
 
       const newData = await this.database.data.createMany({
         data: this.buffer,
       });
 
-      console.log("newData", newData);
-      console.log("data saved to the database");
+      // console.log("newData", newData);
+      // console.log("data saved to the database");
     } catch (error) {
       console.log("error", error);
     }
