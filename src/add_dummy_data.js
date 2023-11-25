@@ -14,7 +14,7 @@ function subtractMonths(date, months) {
 }
 
 function subtractDay(date, day) {
-  date.setDay(date.getDay() - day);
+  date.setDate(date.getDate() - day);
 
   return date;
 }
@@ -29,7 +29,8 @@ const count = 24;
 let entries = [];
 
 for (let index = 0; index < count; index++) {
-  const newTime = subtractMonths(new Date(), 1);
+  // const newTime = subtractMonths(new Date(), 1);
+  const newTime = subtractDay(new Date(), 1);
   newTime.addHours(index);
 
   const meanTemperature = Math.floor(Math.random() * 50);

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { formatMeanData } from "../utils/data_helper";
+import { formatMeanData, getFormatedData } from "../utils/data_helper";
 import { registerStation } from "../utils/register_station";
 import { getCommunication } from "../all_comunication";
 
@@ -91,7 +91,7 @@ async function getDaily(req: Request, res: Response): Promise<void> {
       },
     });
     // console.log("data", data);
-    // console.log("data length", data.length);
+    console.log("data length", data.length);
 
     // console.log("data in daily endpoint", data);
     // get them to the right format
@@ -124,16 +124,15 @@ async function getWeekly(req: Request, res: Response) {
       res.status(400).send("Bad request");
       return;
     }
-    // get last 24 hours
-    const lastWeek = new Date();
-    lastWeek.setDate(lastWeek.getDate() - 7);
+
     const station: any = await prisma.station.findUnique({
       where: {
         id: parseInt(stationId),
       },
     });
 
-    // get the data from the database7
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
     const data = await prisma.meanData.findMany({
       where: {
         mac: station.mac,
@@ -143,8 +142,8 @@ async function getWeekly(req: Request, res: Response) {
       },
     });
 
-    const formatedData = formatMeanData(data, dataType);
-    // console.log("formatedData", formatedData);
+    const formatedData = getFormatedData(data, dataType);
+    console.log("formatedData in Weekly", formatedData);
     res.send(formatedData);
   } catch (error) {}
 }
@@ -169,7 +168,7 @@ async function getMonthly(req: Request, res: Response) {
       },
     });
     // get the data from the database7
-    const data = await prisma.meanData.findMany({
+    const data: any = await prisma.meanData.findMany({
       where: {
         mac: station.mac,
         time: {
@@ -178,14 +177,7 @@ async function getMonthly(req: Request, res: Response) {
       },
     });
 
-    console.log("data in daily endpoint", data);
-
-    // get them to the right format
-    // { min, max, mean}
-
-    const formatedData = formatMeanData(data, dataType);
-    // console.log("formatedData", formatedData);
-    res.send(formatedData);
+    res.send(getFormatedData(data, dataType));
   } catch (error) {}
 }
 

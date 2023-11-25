@@ -47,6 +47,10 @@ app.post("/api/v1/station", addStation);
 app.put("/api/v1/station", changeStation);
 app.delete("/api/v1/station/:id", deleteStation);
 
+// app.get("/api/v1/station/weather/:id", (req: Request, res: Response) => {
+//   res.send("weather");
+// });
+
 app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });

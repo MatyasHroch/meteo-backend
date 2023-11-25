@@ -15,6 +15,21 @@ class AllCommunication {
 
   addFirmwareCommunication(communication: DataGrabber, address: string) {
     this.firmwareSocketMap.set(address, communication);
+    communication.on("close", (communication: DataGrabber) =>
+      this.onFirmwareClose(communication)
+    );
+    communication.on("error", (communication: DataGrabber) =>
+      this.onFirmwareClose(communication)
+    );
+  }
+
+  onFirmwareClose(communication: DataGrabber) {
+    communication.stop();
+    this.getAllFirmwareCommunication().forEach((value, key) => {
+      if (value == communication) {
+        this.removeFirmwareCommunication(key);
+      }
+    });
   }
 
   removeFirmwareCommunication(address: string) {
@@ -47,14 +62,18 @@ class AllCommunication {
           return;
         }
         const ip = station.uri;
-        const dg = new DataGrabber(`ws://${ip}/ws`, 5);
-        const df = new DataFetcher(`http://${ip}/`, station.mac, 2);
-        if (dg.run()) {
-          this.addFirmwareCommunication(dg, ip);
+        if (!this.firmwareSocketMap.has(ip)) {
+          const dg = new DataGrabber(`ws://${ip}/ws`, 5);
+          if (dg.run()) {
+            this.addFirmwareCommunication(dg, ip);
+          }
         }
+        if (!this.slowDataFetcherMap.has(ip)) {
+          const df = new DataFetcher(`http://${ip}/`, station.mac, 2);
 
-        if (df.run()) {
-          this.addDataFetcherCommunication(df, ip);
+          if (df.run()) {
+            this.addDataFetcherCommunication(df, ip);
+          }
         }
       } catch (error) {
         console.error(error);

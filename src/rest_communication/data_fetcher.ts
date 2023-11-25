@@ -12,12 +12,13 @@ class DataFetcher {
   private readonly dataController: DataController;
   private intervalId?: NodeJS.Timeout | null = null;
   private readonly mac: string;
+  private readonly millisecondsSaveInterval: number = 1000 * 5 * 60;
 
   constructor(webAddress: string, mac: string, pollTimeSeconds: number) {
     this.pollTimeMs = pollTimeSeconds * 1000;
     this.webAddress = webAddress;
     this.mac = mac;
-    this.axios = new Axios();
+    this.axios = new Axios({ method: "GET" });
     this.dataController = new DataController(mac);
   }
 
@@ -28,7 +29,11 @@ class DataFetcher {
     }
 
     console.log("data fetcher is running");
-    this.intervalId = setInterval(() => this.onTick, this.pollTimeMs);
+    this.intervalId = setInterval(() => this.onTick(), this.pollTimeMs);
+    setInterval(
+      () => this.dataController.processBufferData(this.mac),
+      this.millisecondsSaveInterval
+    );
 
     return true;
   }
@@ -49,24 +54,32 @@ class DataFetcher {
     const formatedData = formatData(rawData);
     const ok = propertiesOk(formatedData);
 
-    console.log("formatedData in onTick", formatedData);
+    // console.log("formatedData in onTick", formatedData);
+    // console.log("ok in onTick", ok);
 
-    for (const value in Object.entries(formatedData)) {
-      if (value) throw new Error("value is null");
+    for (const value of Object.keys(ok)) {
+      if (ok[value as keyof typeof ok] === false)
+        throw new Error("value is null");
     }
 
-    console.log("ok in onTick", ok);
-    await this.dataController.addBufferData(formatedData);
+    // console.log("ok in onTick", ok);
+    try {
+      await this.dataController.addBufferData(formatedData);
+    } catch (error) {
+      console.error(error);
+    }
 
-    // do it every 2 minutes
-
-    // this.dataController.processBufferData();
+    //
   }
 
   private async fetchData(): Promise<RawData> {
     let result: RawData;
     try {
-      result = JSON.parse(await this.axios.get(this.webAddress)) as RawData;
+      if (this.webAddress === null) throw new Error("webAddress is null");
+      result = JSON.parse(
+        (await this.axios.get(this.webAddress, { method: "GET" })).data
+      ) as RawData;
+      // console.log("result in fetchData from the HARDWARE", result);
     } catch (error) {
       throw error;
     }

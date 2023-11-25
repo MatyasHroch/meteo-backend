@@ -3,14 +3,16 @@ import { FormatedData, RawData, RawDataKeys } from "../types/meteo_data_types";
 import { DataController } from "./data_controller";
 import { DataProvider } from "./data_provider";
 import { formatData } from "../utils/data_helper";
+import { EventEmitter } from "events";
 
-class DataGrabber {
+class DataGrabber extends EventEmitter {
   private ws: WebSocket;
   private dataProvider: DataProvider;
   private dataController: DataController;
   private static readonly ROUNDING = 2;
 
   constructor(webSocketAddress: string, bufferSize: number | null = null) {
+    super();
     // we set the communication channels
     console.log("webSocketAddress", webSocketAddress);
     this.ws = new WebSocket(webSocketAddress);
@@ -60,13 +62,20 @@ class DataGrabber {
     this.ws.on("error", () => this.wsError);
     // this.ws.on("open", this.wsOpen);
     this.ws.on("message", (data: string) => this.wsMessage(data));
+    this.ws.on("close", (code: number, reason: Buffer) =>
+      this.wsClose(code, reason)
+    );
   }
 
   ///////////////////////
   // here we define all the callbacks for the websocket
 
   private wsError(): void {
-    console.error();
+    this.emit("error", this);
+  }
+
+  private wsClose(code: number, reason: Buffer): void {
+    this.emit("close", this);
   }
 
   // private wsOpen(): void {
